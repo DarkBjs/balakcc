@@ -1,6 +1,6 @@
-from pyrogram import Client 
+from pyrogram import Client
 import json
-from FUNC.server_stats import *
+from flask import Flask
 
 plugins = dict(root="BOT")
 
@@ -10,12 +10,6 @@ with open("FILES/config.json", "r", encoding="utf-8") as f:
     API_HASH  = DATA["API_HASH"]
     BOT_TOKEN = DATA["BOT_TOKEN"]
 
-user = Client( 
-            "Scrapper", 
-             api_id   = API_ID, 
-             api_hash = API_HASH
-              )
-
 bot = Client(
     "MY_BOT", 
     api_id    = API_ID, 
@@ -24,11 +18,18 @@ bot = Client(
     plugins   = plugins 
 )
 
+# Simple Web Server for Health Check
+app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "Bot is running"
 
 if __name__ == "__main__":
-    # send_server_alert()
-    print("Done Bot Active ✅")
-    print("NOW START BOT ONCE MY MASTER")
+    import threading
 
-    bot.run()
+    # Start bot in a separate thread
+    threading.Thread(target=bot.run, daemon=True).start()
+    
+    # Start Flask server on port 8000
+    app.run(host="0.0.0.0", port=8000)
